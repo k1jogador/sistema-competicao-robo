@@ -1,0 +1,307 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Painel do Juiz - TMTR</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f4f4f4;
+        padding: 20px;
+      }
+      .btn-ponto {
+        height: 55px;
+        font-weight: bold;
+        width: 100%;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+      }
+      .visor-tempo {
+        font-size: 3rem;
+        font-weight: bold;
+        text-align: center;
+        color: #333;
+        background: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 2px solid #ccc;
+      }
+      .rodando {
+        color: #d63384;
+        border-color: #d63384;
+      }
+      #log-pontos {
+        max-height: 200px;
+        overflow-y: auto;
+        font-size: 0.8rem;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-5">
+          <div id="cronometro" class="visor-tempo">00.0s</div>
+
+          <div class="card mb-3">
+            <div class="card-header bg-primary text-white fw-bold">
+              Controle da Rodada
+            </div>
+            <div class="card-body">
+              <label>Equipe na Pista:</label>
+              <select
+                id="selectEquipe"
+                class="form-select mb-3 fw-bold"
+              ></select>
+
+              <div class="d-flex gap-2 mb-3">
+                <button
+                  onclick="iniciar()"
+                  class="btn btn-success flex-grow-1 py-3"
+                >
+                  ▶ INICIAR
+                </button>
+                <button
+                  onclick="pausar()"
+                  class="btn btn-warning flex-grow-1 py-3"
+                >
+                  ⏸ PAUSAR
+                </button>
+                <button onclick="resetar()" class="btn btn-secondary py-3">
+                  ↺
+                </button>
+              </div>
+
+              <div class="text-center bg-dark text-white p-2 rounded mb-2">
+                <small>PONTUAÇÃO ATUAL</small>
+                <h1 id="displayPontos" class="m-0 text-warning">0</h1>
+              </div>
+
+              <button
+                onclick="finalizarRodada()"
+                class="btn btn-danger w-100 py-3 fw-bold"
+              >
+                🏁 FINALIZAR E SALVAR NO BANCO
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">Histórico da Rodada</div>
+            <div id="log-pontos">...</div>
+          </div>
+          <div class="mt-2 input-group">
+            <input
+              type="text"
+              id="nomeNovaEquipe"
+              class="form-control"
+              placeholder="Nova Equipe"
+            />
+            <button onclick="criarEquipe()" class="btn btn-outline-primary">
+              Add
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-7">
+          <div class="card h-100">
+            <div class="card-header bg-dark text-white text-center fw-bold">
+              LANÇAR NOTAS (Funciona pausado)
+            </div>
+            <div class="card-body">
+              <div class="row g-2">
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(5, 'Reta')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    Reta (+5)
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(10, 'Curva 45')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    Curva 45º (+10)
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(20, 'Curva 90')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    Curva 90º (+20)
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(20, 'Arco 90')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    Arco 90º (+20)
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(30, 'Arco 180')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    Arco 180º (+30)
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(40, 'Arco 270')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    Arco 270º (+40)
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(40, 'Cruzamento')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    Cruzamento (+40)
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button
+                    onclick="pontuar(50, 'ZigZag')"
+                    class="btn btn-outline-dark btn-ponto"
+                  >
+                    ZigZag (+50)
+                  </button>
+                </div>
+                <div class="col-12">
+                  <button
+                    onclick="pontuar(-10, 'CORREÇÃO')"
+                    class="btn btn-danger btn-ponto mt-2"
+                  >
+                    SUBTRAIR 10 PONTOS (Correção)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const socket = io('http://localhost:3000');
+      let pontuacaoLocal = 0;
+
+      socket.on('connect', () => socket.emit('pedir_equipes'));
+
+      // Recebe lista de equipes
+      socket.on('lista_equipes', (equipes) => {
+        const select = document.getElementById('selectEquipe');
+        const valorAtual = select.value; // Tenta manter a seleção
+        select.innerHTML = '';
+        equipes.forEach((eq) => {
+          const opt = document.createElement('option');
+          opt.value = eq.id;
+          opt.text = eq.name;
+          select.appendChild(opt);
+        });
+        if (valorAtual) select.value = valorAtual;
+      });
+
+      socket.on('tempo_atualizado', (ms) => {
+        document.getElementById('cronometro').innerText =
+          (ms / 1000).toFixed(1) + 's';
+        if (ms > 0)
+          document.getElementById('cronometro').classList.add('rodando');
+      });
+
+      socket.on('cronometro_status', (dados) => {
+        document.getElementById('cronometro').classList.remove('rodando');
+      });
+
+      function iniciar() {
+        const select = document.getElementById('selectEquipe');
+        const teamId = select.value;
+
+        const teamName = select.options[select.selectedIndex]?.text;
+
+        if (!teamId) return alert('Selecione uma equipe antes de iniciar!');
+
+        console.log(teamId + teamName);
+        socket.emit('iniciar_cronometro', { teamId, teamName });
+      }
+      function pausar() {
+        socket.emit('pausar_cronometro');
+      }
+
+      function resetar() {
+        if (confirm('Zerar cronômetro e pontuação atual?')) {
+          socket.emit('resetar_cronometro');
+          pontuacaoLocal = 0;
+          document.getElementById('log-pontos').innerHTML = '';
+          atualizarDisplay();
+        }
+      }
+
+      function pontuar(pts, motivo) {
+        pontuacaoLocal += pts;
+        if (pontuacaoLocal < 0) {
+          pontuacaoLocal = 0;
+        }
+
+        atualizarDisplay();
+        adicionarAoLog(pts, motivo);
+
+        socket.emit('adicionar_pontos', { pontos: pts, motivo: motivo });
+      }
+
+      function atualizarDisplay() {
+        document.getElementById('displayPontos').innerText = pontuacaoLocal;
+      }
+
+      function adicionarAoLog(pts, motivo) {
+        const log = document.getElementById('log-pontos');
+        const p = document.createElement('div');
+        p.innerHTML = `<strong>${pts > 0 ? '+' : ''}${pts}</strong> - ${motivo}`;
+        p.className = 'border-bottom py-1';
+        log.prepend(p);
+      }
+
+      function criarEquipe() {
+        const nome = document.getElementById('nomeNovaEquipe').value;
+        if (nome) {
+          socket.emit('criar_equipe', { nome });
+          document.getElementById('nomeNovaEquipe').value = '';
+        }
+      }
+
+      function finalizarRodada() {
+        const teamId = document.getElementById('selectEquipe').value;
+        if (!teamId) return alert('Selecione uma equipe!');
+
+        if (
+          confirm(
+            `Confirmar FINALIZAÇÃO?\nEquipe: ${document.getElementById('selectEquipe').selectedOptions[0].text}\nPontos: ${pontuacaoLocal}`,
+          )
+        ) {
+          socket.emit('finalizar_rodada', { teamId, score: pontuacaoLocal });
+        }
+      }
+
+      socket.on('rodada_salva_sucesso', () => {
+        alert('✅ Rodada salva e Ranking atualizado!');
+        pontuacaoLocal = 0;
+        document.getElementById('log-pontos').innerHTML = '';
+        atualizarDisplay();
+      });
+    </script>
+  </body>
+</html>

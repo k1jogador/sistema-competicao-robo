@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap');
+
+body {
+  background-color: #f0f2f5;
+  color: #333;
+  font-family: 'Rajdhani', sans-serif;
+  overflow: hidden;
+  margin: 0;
+  padding: 20px;
+}
+
+h1.titulo-torneio {
+  text-transform: uppercase;
+  font-size: 2.5rem;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 3px solid #007bff;
+  padding-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+#area-cronometro {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.98);
+  z-index: 9999;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.timer-gigante {
+  font-size: 20rem;
+  font-weight: 700;
+  color: #222;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.placar-live-box {
+  margin-top: -20px;
+  background: #007bff;
+  color: white;
+  padding: 10px 40px;
+  border-radius: 50px;
+  font-size: 4rem;
+  font-weight: bold;
+  box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
+}
+
+.timer-subtexto {
+  font-size: 1.5rem;
+  color: #666;
+  letter-spacing: 5px;
+  margin-top: 20px;
+  text-transform: uppercase;
+}
+
+.ponto-flutuante {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8rem;
+  font-weight: bold;
+  color: #28a745;
+  z-index: 10000;
+  pointer-events: none;
+  animation: subirESumir 1.5s ease-out forwards;
+  text-shadow: 2px 2px 0px #fff;
+}
+
+@keyframes subirESumir {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -200px) scale(1);
+  }
+}
+
+#container-ranking {
+  perspective: 1000px;
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+.pagina-ranking {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.flip-out {
+  transform: rotateX(-90deg);
+  opacity: 0;
+}
+.flip-in {
+  animation: flipIn 0.6s forwards;
+}
+
+@keyframes flipIn {
+  from {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+.team-row {
+  display: grid;
+  grid-template-columns: 10fr 1fr;
+  align-items: center;
+  background: #fff;
+  margin-bottom: 12px;
+  padding: 20px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.pos-1 {
+  border: 2px solid #ffd700;
+  border-left: 6px solid #ffd700;
+}
+.pos-2 {
+  border: 2px solid #ccc;
+  border-left: 6px solid #ccc;
+}
+.pos-3 {
+  border: 2px solid #eecfa1;
+  border-left: 6px solid #eecfa1;
+}
+
+.rank-num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  width: 70px;
+  color: #bbb;
+}
+.pos-1 > .team-info > .team-name {
+  color: #d4af37;
+}
+.pos-2 > .team-info > .team-name {
+  color: #7f7f7f;
+}
+.pos-3 > .team-info > .team-name {
+  color: #a05a2c;
+}
+
+.team-info {
+  display: grid;
+}
+.team-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #222;
+  line-height: 1;
+}
+.time-bagde {
+  font-size: 0.9em;
+  opacity: 0.7;
+  width: 100%;
+  text-align: right;
+}
+
+.team-rounds {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  gap: 8px;
+  margin-top: 4px;
+  align-items: center;
+  row-gap: 20px;
+}
+
+/* Badge da Rodada*/
+.badge-rodada {
+  position: relative;
+  background: #f1f3f5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 1.5rem;
+  border: 1px solid #e9ecef;
+  color: #555;
+  display: grid;
+  grid-template-columns: auto 5fr auto;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-num {
+  position: absolute;
+  top: 105%;
+  right: -5%;
+  transform: translate(-50%, -50%);
+  background-color: #555;
+  color: #fff;
+  padding: 0px 10px;
+  border-radius: 20px;
+  font-size: 1rem;
+}
+.badge-rodada strong {
+  color: #007bff;
+  font-size: 2rem;
+}
+
+.team-total {
+  margin-top: 20px;
+  text-align: right;
+  min-width: 320px;
+}
+.score-big {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #333;
+  line-height: 0.9;
+}
+.score-label {
+  font-size: 0.75rem;
+  color: #888;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+#paginacao-info {
+  position: fixed;
+  bottom: 10px;
+  right: 20px;
+  font-weight: bold;
+  color: #999;
+}
+
+.cabecalho-timer {
+  text-align: center;
+  margin-bottom: 20px;
+  animation: fadeInDown 0.5s ease;
+}
+
+.timer-team {
+  font-size: 4rem;
+  font-weight: 800;
+  color: #007bff;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 5px;
+  letter-spacing: -2px;
+}
+
+.timer-round {
+  font-size: 2rem;
+  color: #666;
+  background: #e9ecef;
+  display: inline-block;
+  padding: 5px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

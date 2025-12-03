@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ranking TMTR</title>
+    <link rel="stylesheet" href="/css/telao.css" />
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div id="area-cronometro">
+      <div class="cabecalho-timer">
+        <div id="live-team-name" class="timer-team">NOME DA EQUIPE</div>
+        <div id="live-round-num" class="timer-round">1ª TENTATIVA</div>
+      </div>
+
+      <div id="timer-val" class="timer-gigante">00.0</div>
+
+      <div class="placar-live-box">
+        <span id="live-score-val">0 pts</span>
+      </div>
+
+      <div class="timer-subtexto">TEMPO DECORRIDO</div>
+    </div>
+
+    <h1 class="titulo-torneio">Torneio de Robótica • Classificação</h1>
+
+    <div id="container-ranking">
+      <div id="wrapper-lista" class="pagina-ranking">
+        <div id="lista-ranking"></div>
+      </div>
+    </div>
+
+    <div id="paginacao-info">PÁGINA 1 / 1</div>
+
+    <script src="/scripts/telao.js"></script>
+  </body>
+</html>
