@@ -1,4 +1,4 @@
-const socket = io('http://localhost:3000');
+const socket = io();
 
 const ITENS_POR_PAGINA = 5;
 const TEMPO_PAGINA_MS = 10000;
