@@ -197,7 +197,7 @@
     </div>
 
     <script>
-      const socket = io('http://localhost:3000');
+      const socket = io();
       let pontuacaoLocal = 0;
 
       socket.on('connect', () => socket.emit('pedir_equipes'));
