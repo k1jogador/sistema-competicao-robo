@@ -16,6 +16,7 @@ const areaTimer = document.getElementById('area-cronometro');
 const liveScoreEl = document.getElementById('live-score-val');
 const liveTeamName = document.getElementById('live-team-name');
 const liveRoundNum = document.getElementById('live-round-num');
+const feedLista = document.getElementById('feed-lista');
 
 socket.on('ranking_atualizado', (ranking) => {
   dadosRanking = ranking;
@@ -40,6 +41,7 @@ socket.on('tempo_atualizado', (ms) => {
     liveScoreEl.innerText = '0 pts';
     iniciarRotacao();
   }
+  if (ms === 0) feedLista.innerHTML = '';
 });
 
 socket.on('atualizar_placar_tela', (dados) => {
@@ -161,4 +163,49 @@ function renderizarPagina() {
   const totalPaginas = Math.ceil(dadosRanking.length / ITENS_POR_PAGINA) || 1;
   document.getElementById('paginacao-info').innerText =
     `PÁGINA ${paginaAtual + 1} / ${totalPaginas}`;
+}
+
+socket.on('log_ao_vivo', (dados) => {
+  const div = document.createElement('div');
+  div.className = 'feed-item';
+  if (dados.points < 0) div.classList.add('negativo');
+
+  div.innerHTML = `${dados.reason} <strong>${dados.points > 0 ? '+' : ''}${dados.points}</strong>`;
+
+  // Adiciona no topo
+  feedLista.prepend(div);
+
+  // Mantém apenas os ultimos 6 logs para não poluir
+  if (feedLista.children.length > 6) {
+    feedLista.lastElementChild.remove();
+  }
+});
+
+socket.on('exibir_relatorio_telao', (relatorio) => {
+  const modal = document.getElementById('modal-relatorio');
+  const tbody = document.getElementById('tbody-relatorio');
+  tbody.innerHTML = '';
+
+  relatorio.forEach((r) => {
+    // Formata os logs em uma string (ex: "Reta(+5), Curva(+10)")
+    const detalhes = r.logs.map((l) => `${l.reason}(${l.points})`).join(', ');
+
+    const dataHora = new Date(r.createdAt).toLocaleTimeString();
+
+    tbody.innerHTML += `
+            <tr>
+                <td>${dataHora}</td>
+                <td><strong>${r.team.name}</strong></td>
+                <td>${r.attemptNumber}ª</td>
+                <td>${r.score}</td>
+                <td style="font-size: 0.8rem; color: #555;">${detalhes}</td>
+            </tr>
+        `;
+  });
+
+  modal.style.display = 'flex';
+});
+
+function fecharRelatorio() {
+  document.getElementById('modal-relatorio').style.display = 'none';
 }

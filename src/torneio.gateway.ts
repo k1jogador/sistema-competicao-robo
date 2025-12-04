@@ -92,27 +92,35 @@ export class TorneioGateway implements OnGatewayConnection {
   // --- PONTUAÇÃO E FINALIZAÇÃO ---
 
   @SubscribeMessage('adicionar_pontos')
-  somarPontos(@MessageBody() dados: { pontos: number; motivo: string }) {
-    this.server.emit('atualizar_placar_tela', dados);
+  somarPontos(@MessageBody() dados: { points: number; reason: string }) {
+    // Envia para o Telão mostrar o log ao vivo
+    this.server.emit('log_ao_vivo', dados);
+    this.server.emit('atualizar_placar_tela', { pontos: dados.points });
   }
 
   @SubscribeMessage('finalizar_rodada')
-  async finalizar(@MessageBody() dados: { teamId: string; score: number }) {
-    //console.log(
-    //`Finalizando rodada da equipe ${dados.teamId}. Pontos: ${dados.score}`,
-    //);
+  async finalizar(
+    @MessageBody() dados: { teamId: string; score: number; logs: any[] },
+  ) {
+    console.log(`Finalizando com ${dados.logs.length} registros de histórico.`);
 
+    // Salva tudo no banco (Nota + Logs)
     await this.torneioService.salvarRodada(
       dados.teamId,
       dados.score,
       this.tempoAtualMs,
+      dados.logs,
     );
 
     const ranking = await this.torneioService.obterRanking();
-
     this.server.emit('ranking_atualizado', ranking);
-
     this.server.emit('rodada_salva_sucesso');
     this.resetar();
+  }
+
+  @SubscribeMessage('solicitar_relatorio')
+  async pedirRelatorio() {
+    const relatorio = await this.torneioService.gerarRelatorioGeral();
+    this.server.emit('exibir_relatorio_telao', relatorio);
   }
 }

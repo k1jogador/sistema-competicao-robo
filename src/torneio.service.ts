@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Team } from '../entities/team.entity';
-import { Round } from '../entities/round.entity';
+import { Team } from './entities/team.entity';
+import { Round } from './entities/round.entity';
 
 @Injectable()
 export class TorneioService {
@@ -20,17 +20,23 @@ export class TorneioService {
   }
 
   // AGORA: Calcula qual é o número da rodada automaticamente
-  async salvarRodada(teamId: string, score: number, timeMs: number) {
-    // Conta quantas rodadas esse time já tem
+  async salvarRodada(
+    teamId: string,
+    score: number,
+    timeMs: number,
+    logs: { points: number; reason: string }[],
+  ) {
     const tentativasAnteriores = await this.roundRepo.count({
       where: { team: { id: teamId } },
     });
 
+    // Cria a rodada JÁ com os logs dentro (graças ao cascade: true)
     const round = this.roundRepo.create({
       team: { id: teamId },
       score,
       timeMs,
-      attemptNumber: tentativasAnteriores + 1, // Incrementa: 1, 2, 3...
+      attemptNumber: tentativasAnteriores + 1,
+      logs: logs.map((l) => ({ points: l.points, reason: l.reason })), // Cria os objetos ScoreLog
     });
 
     return this.roundRepo.save(round);
@@ -70,5 +76,12 @@ export class TorneioService {
       where: { team: { id: teamId } },
     });
     return count + 1;
+  }
+
+  async gerarRelatorioGeral() {
+    return this.roundRepo.find({
+      relations: ['team', 'logs'], // Traz o time e o histórico detalhado
+      order: { createdAt: 'DESC' }, // Do mais recente para o mais antigo
+    });
   }
 }

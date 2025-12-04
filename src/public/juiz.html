@@ -111,83 +111,64 @@
         </div>
 
         <div class="col-md-7">
-          <div class="card h-100">
-            <div class="card-header bg-dark text-white text-center fw-bold">
-              LANÇAR NOTAS (Funciona pausado)
-            </div>
-            <div class="card-body">
-              <div class="row g-2">
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(5, 'Reta')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    Reta (+5)
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(10, 'Curva 45')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    Curva 45º (+10)
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(20, 'Curva 90')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    Curva 90º (+20)
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(20, 'Arco 90')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    Arco 90º (+20)
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(30, 'Arco 180')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    Arco 180º (+30)
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(40, 'Arco 270')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    Arco 270º (+40)
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(40, 'Cruzamento')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    Cruzamento (+40)
-                  </button>
-                </div>
-                <div class="col-6">
-                  <button
-                    onclick="pontuar(50, 'ZigZag')"
-                    class="btn btn-outline-dark btn-ponto"
-                  >
-                    ZigZag (+50)
-                  </button>
-                </div>
-                <div class="col-12">
-                  <button
-                    onclick="pontuar(-10, 'CORREÇÃO')"
-                    class="btn btn-danger btn-ponto mt-2"
-                  >
-                    SUBTRAIR 10 PONTOS (Correção)
-                  </button>
+          <button
+            onclick="pedirRelatorio()"
+            class="btn btn-info w-100 mt-2 fw-bold"
+          >
+            📄 EXIBIR RELATÓRIO NO TELÃO
+          </button>
+
+          <div class="col-md-7">
+            <div class="card h-100">
+              <div class="card-header bg-dark text-white text-center">
+                LANÇAR NOTAS
+              </div>
+              <div class="card-body">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(5, 'Reta')"
+                      class="btn btn-outline-dark btn-ponto"
+                    >
+                      Reta (+5)
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(10, 'Curva 45')"
+                      class="btn btn-outline-dark btn-ponto"
+                    >
+                      Curva 45º (+10)
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(20, 'Curva 90')"
+                      class="btn btn-outline-dark btn-ponto"
+                    >
+                      Curva 90º (+20)
+                    </button>
+                  </div>
+                  <hr />
+                  <div class="col-12 bg-light p-3 border rounded">
+                    <label class="fw-bold text-danger"
+                      >CORREÇÃO DE PONTOS</label
+                    >
+                    <div class="input-group">
+                      <input
+                        type="number"
+                        id="valorCorrecao"
+                        class="form-control"
+                        placeholder="Ex: 10"
+                      />
+                      <button onclick="corrigirPontos()" class="btn btn-danger">
+                        REMOVER PONTOS
+                      </button>
+                    </div>
+                    <small class="text-muted"
+                      >Digite o valor positivo, o sistema irá subtrair.</small
+                    >
+                  </div>
                 </div>
               </div>
             </div>
@@ -199,6 +180,7 @@
     <script>
       const socket = io();
       let pontuacaoLocal = 0;
+      let historicoLogs = [];
 
       socket.on('connect', () => socket.emit('pedir_equipes'));
 
@@ -253,14 +235,30 @@
 
       function pontuar(pts, motivo) {
         pontuacaoLocal += pts;
-        if (pontuacaoLocal < 0) {
-          pontuacaoLocal = 0;
-        }
+        if (pontuacaoLocal < 0) pontuacaoLocal = 0;
+
+        // Guarda no histórico local para enviar no final
+        historicoLogs.push({ points: pts, reason: motivo });
 
         atualizarDisplay();
-        adicionarAoLog(pts, motivo);
+        adicionarAoLogVisivel(pts, motivo);
 
-        socket.emit('adicionar_pontos', { pontos: pts, motivo: motivo });
+        // Envia para o telão mostrar ao vivo
+        socket.emit('adicionar_pontos', { points: pts, reason: motivo });
+      }
+
+      function corrigirPontos() {
+        const input = document.getElementById('valorCorrecao');
+        let valor = parseInt(input.value);
+
+        if (!valor || valor <= 0)
+          return alert('Digite um valor válido para remover.');
+
+        // Transforma em negativo
+        const pontosRemover = -valor;
+
+        pontuar(pontosRemover, 'CORREÇÃO MANUAL');
+        input.value = ''; // Limpa o input
       }
 
       function atualizarDisplay() {
@@ -287,21 +285,39 @@
         const teamId = document.getElementById('selectEquipe').value;
         if (!teamId) return alert('Selecione uma equipe!');
 
+        if (confirm('Confirmar finalização?')) {
+          socket.emit('finalizar_rodada', {
+            teamId,
+            score: pontuacaoLocal,
+            logs: historicoLogs, // <--- ENVIA O HISTÓRICO PRO BANCO
+          });
+        }
+      }
+
+      function pedirRelatorio() {
         if (
           confirm(
-            `Confirmar FINALIZAÇÃO?\nEquipe: ${document.getElementById('selectEquipe').selectedOptions[0].text}\nPontos: ${pontuacaoLocal}`,
+            'Exibir relatório geral no Telão? (Isso vai cobrir o ranking)',
           )
         ) {
-          socket.emit('finalizar_rodada', { teamId, score: pontuacaoLocal });
+          socket.emit('solicitar_relatorio');
         }
       }
 
       socket.on('rodada_salva_sucesso', () => {
-        alert('✅ Rodada salva e Ranking atualizado!');
+        alert('Salvo!');
         pontuacaoLocal = 0;
-        document.getElementById('log-pontos').innerHTML = '';
+        historicoLogs = []; // Limpa o histórico
         atualizarDisplay();
+        document.getElementById('log-pontos').innerHTML = '';
       });
+
+      function atualizarDisplay() {
+        document.getElementById('displayPontos').innerText = pontuacaoLocal;
+      }
+      function adicionarAoLogVisivel(pts, motivo) {
+        /* Log visual do HTML do juiz... */
+      }
     </script>
   </body>
 </html>
