@@ -13,12 +13,13 @@
         padding: 20px;
       }
       .btn-ponto {
-        height: 55px;
+        height: auto;
         font-weight: bold;
         width: 100%;
         margin-bottom: 5px;
         font-size: 0.9rem;
       }
+
       .visor-tempo {
         font-size: 3rem;
         font-weight: bold;
@@ -129,24 +130,112 @@
                     <button
                       onclick="pontuar(5, 'Reta')"
                       class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
                     >
-                      Reta (+5)
+                      <img src="./images/reta.jpg" />
+                      Reta (+50)
                     </button>
                   </div>
                   <div class="col-6">
                     <button
-                      onclick="pontuar(10, 'Curva 45')"
+                      onclick="pontuar(10, 'Mudança Dir. 45')"
                       class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
                     >
-                      Curva 45º (+10)
+                      <img src="./images/mudanca45.jpg" />
+                      Mudança de Direção (+10)
                     </button>
                   </div>
                   <div class="col-6">
                     <button
-                      onclick="pontuar(20, 'Curva 90')"
+                      onclick="pontuar(20, 'Mudança Dir. 90')"
                       class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
                     >
-                      Curva 90º (+20)
+                      <img src="./images/mudanca90.jpg" />
+                      Mudança de Direção 90º (+20)
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(20, 'Arco 90')"
+                      class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
+                    >
+                      <img src="./images/arco90.jpg" />
+                      Arco 90º (+20)
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(30, 'Arco 180')"
+                      class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
+                    >
+                      <img src="./images/arco180.jpg" />
+                      Arco 180º (+30)
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(40, 'Arco 270')"
+                      class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
+                    >
+                      <img src="./images/arco270.jpg" />
+                      Arco 270º (+40)
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(40, 'Cruzamento 90')"
+                      class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
+                    >
+                      <img src="./images/cruzamento.jpg" />
+                      Cruzamento de 90º (+40)
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button
+                      onclick="pontuar(50, 'Zigue-Zague')"
+                      class="btn btn-outline-dark btn-ponto"
+                      style="
+                        padding: 2px;
+                        display: flex;
+                        flex-direction: column;
+                      "
+                    >
+                      <img src="./images/zigzag.jpg" />
+                      Zigue-Zague (+50)
                     </button>
                   </div>
                   <hr />
